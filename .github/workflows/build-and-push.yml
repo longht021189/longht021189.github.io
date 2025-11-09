@@ -1,0 +1,63 @@
+name: Build and Push Dist
+
+on:
+  push:
+    branches:
+      - dev
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun i
+
+      - name: Build
+        run: bun run build
+
+      - name: Commit build output to main
+        run: |
+          set -euo pipefail
+
+          if [ ! -d dist ]; then
+            echo "dist directory not found" >&2
+            exit 1
+          fi
+
+          BUILD_COMMIT=$(git rev-parse HEAD)
+          TEMP_DIST=$(mktemp -d)
+          cp -R dist/. "$TEMP_DIST"/
+
+          git fetch origin main
+          git checkout -B main origin/main
+          git clean -d -f -x
+
+          cp -R "$TEMP_DIST"/. ./
+          rm -rf "$TEMP_DIST"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add -f *
+
+          if git diff --cached --quiet; then
+            echo "No build changes to commit."
+            exit 0
+          fi
+
+          git commit -m "chore: update build output (${BUILD_COMMIT})"
+          git push origin HEAD:main
