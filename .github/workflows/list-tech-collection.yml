@@ -1,0 +1,39 @@
+name: Generate Tech Collection Listing
+
+on:
+  push:
+    paths:
+      - tech-collection/**
+      - .github/workflows/list-tech-collection.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-listing:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate tech-collection.json
+        run: |
+          set -euo pipefail
+          python3 .github/python/generate_tech_collection.py
+
+      - name: Commit updated listing
+        run: |
+          set -euo pipefail
+
+          if git diff --quiet -- tech-collection.json; then
+            echo "tech-collection.json already up to date."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add tech-collection.json
+          git commit -m "chore: update tech-collection listing [skip actions]"
+          git push
