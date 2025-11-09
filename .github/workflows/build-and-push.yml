@@ -42,9 +42,10 @@ jobs:
           TEMP_DIST=$(mktemp -d)
           cp -R dist/. "$TEMP_DIST"/
 
+          git clean -d -f -x
+          git checkout HEAD .
           git fetch origin main
           git checkout -B main origin/main
-          git clean -d -f -x
 
           cp -R "$TEMP_DIST"/. ./
           rm -rf "$TEMP_DIST"
