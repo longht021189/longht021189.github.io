@@ -1,0 +1,23 @@
+{
+  "name": "longht021189.github.io",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "rsbuild build",
+    "check": "biome check --write",
+    "dev": "rsbuild dev --open",
+    "format": "biome format --write",
+    "preview": "rsbuild preview"
+  },
+  "dependencies": {
+    "solid-js": "^1.9.10"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.3.2",
+    "@rsbuild/core": "^1.6.0",
+    "@rsbuild/plugin-babel": "^1.0.6",
+    "@rsbuild/plugin-solid": "^1.0.6",
+    "typescript": "^5.9.3"
+  }
+}
