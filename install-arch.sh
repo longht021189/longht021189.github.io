@@ -17,9 +17,9 @@ set -euo pipefail
 # CẤU HÌNH — SỬA CÁC DÒNG NÀY
 # ============================
 
-DISK="/dev/sda"          # <-- ĐỔI THÀNH TÊN Ổ THẬT CỦA BẠN (xem bằng: lsblk)
-HOSTNAME="longdev"            # tên máy
-USERNAME="thanhlong"           # user thường sẽ tạo
+DISK="/dev/nvme0n1"          # <-- ĐỔI THÀNH TÊN Ổ THẬT CỦA BẠN (xem bằng: lsblk)
+HOSTNAME="archdev"            # tên máy
+USERNAME="yourname"           # user thường sẽ tạo
 TIMEZONE="Asia/Ho_Chi_Minh"
 LOCALE="en_US.UTF-8"
 
@@ -118,12 +118,7 @@ cat >> /etc/hosts <<HOSTS
 127.0.1.1   $HOSTNAME.localdomain $HOSTNAME
 HOSTS
 
-echo "--> Đặt mật khẩu root (nhập ngay bây giờ):"
-passwd
-
-useradd -m -G wheel,kvm -s /bin/bash $USERNAME
-echo "--> Đặt mật khẩu cho user $USERNAME (nhập ngay bây giờ):"
-passwd $USERNAME
+useradd -m -G wheel -s /bin/bash $USERNAME
 
 sed -i 's/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 
@@ -133,6 +128,14 @@ grub-mkconfig -o /boot/grub/grub.cfg
 
 systemctl enable NetworkManager
 EOF
+
+# passwd phải chạy riêng, KHÔNG được nằm trong heredoc ở trên,
+# vì heredoc chiếm luôn stdin khiến passwd không đọc được bàn phím thật.
+echo "--> Đặt mật khẩu root (nhập ngay bây giờ):"
+arch-chroot /mnt passwd
+
+echo "--> Đặt mật khẩu cho user $USERNAME (nhập ngay bây giờ):"
+arch-chroot /mnt passwd "$USERNAME"
 
 echo "=================================================="
 echo " CÀI XONG BASE SYSTEM. "
